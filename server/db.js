@@ -74,6 +74,9 @@ function normalize(raw) {
     if (!Array.isArray(item.images)) item.images = typeof item.image === 'string' && item.image ? [item.image] : [];
     item.images = cleanImages(item.images);
     delete item.image;
+    // 路线链接：旧数据没有这两个字段
+    if (typeof item.linkName !== 'string') item.linkName = '';
+    if (typeof item.linkUrl !== 'string') item.linkUrl = '';
   });
 
   // 账号体系：早期版本的数据里没有 users，需要补上内置管理员
@@ -216,6 +219,8 @@ export async function createItinerary(input) {
     location: cleanText(input.location),
     notes: cleanText(input.notes),
     images: cleanImages(input.images),
+    linkName: cleanText(input.linkName),
+    linkUrl: cleanText(input.linkUrl),
     createdAt: new Date().toISOString(),
   };
   state.itineraries.push(item);
@@ -226,7 +231,7 @@ export async function createItinerary(input) {
 export async function updateItinerary(id, patch) {
   const item = state.itineraries.find((one) => one.id === id);
   if (!item) return null;
-  ['date', 'time', 'title', 'location', 'notes'].forEach((key) => {
+  ['date', 'time', 'title', 'location', 'notes', 'linkName', 'linkUrl'].forEach((key) => {
     if (patch[key] !== undefined) item[key] = cleanText(patch[key]);
   });
   if (patch.images !== undefined) item.images = cleanImages(patch.images);

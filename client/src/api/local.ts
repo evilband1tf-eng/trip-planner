@@ -43,7 +43,12 @@ function normalize(state: AppState): AppState {
       ? state.itineraries.map((item) => {
           // 兼容早期只有单张 image 的数据
           const { image: legacyImage, ...rest } = item as ItineraryItem & { image?: string };
-          return { ...rest, images: cleanImages(item.images ?? (legacyImage ? [legacyImage] : [])) };
+          return {
+            ...rest,
+            images: cleanImages(item.images ?? (legacyImage ? [legacyImage] : [])),
+            linkName: typeof item.linkName === 'string' ? item.linkName : '',
+            linkUrl: typeof item.linkUrl === 'string' ? item.linkUrl : '',
+          };
         })
       : [],
   };
@@ -119,6 +124,8 @@ export function createLocalSource(): DataSource {
         location: text(input.location),
         notes: text(input.notes),
         images: cleanImages(input.images),
+        linkName: text(input.linkName),
+        linkUrl: text(input.linkUrl),
         createdAt: nowISO(),
       };
       state = { ...state, itineraries: [...state.itineraries, item] };
@@ -128,7 +135,7 @@ export function createLocalSource(): DataSource {
     async updateItinerary(id, patch) {
       const target = state.itineraries.find((item) => item.id === id);
       if (!target) throw new Error('行程安排不存在');
-      const textFields = ['date', 'time', 'title', 'location', 'notes'] as const;
+      const textFields = ['date', 'time', 'title', 'location', 'notes', 'linkName', 'linkUrl'] as const;
       const next: ItineraryItem = {
         ...target,
         ...Object.fromEntries(

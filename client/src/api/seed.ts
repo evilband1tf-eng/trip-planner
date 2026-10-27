@@ -63,6 +63,8 @@ export function createSeedState(): AppState {
         location: '关西国际机场',
         notes: '购买 ICOCA 卡，入住酒店放行李。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
       {
@@ -74,6 +76,8 @@ export function createSeedState(): AppState {
         location: '清水寺',
         notes: '日落前登高看全景。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
       {
@@ -85,6 +89,8 @@ export function createSeedState(): AppState {
         location: '岚山',
         notes: '尽量早去避开人流。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
       {
@@ -96,6 +102,8 @@ export function createSeedState(): AppState {
         location: '伏见稻荷',
         notes: '和服店需提前一天确认预约。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
       {
@@ -107,6 +115,8 @@ export function createSeedState(): AppState {
         location: '锦市场',
         notes: '玉子烧、鳗鱼饭。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
       {
@@ -118,6 +128,8 @@ export function createSeedState(): AppState {
         location: '大理机场',
         notes: '提前联系民宿接机。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
       {
@@ -129,6 +141,8 @@ export function createSeedState(): AppState {
         location: '才村码头',
         notes: '租电助力车，全程约 30 公里。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
       {
@@ -140,6 +154,8 @@ export function createSeedState(): AppState {
         location: '大理古城',
         notes: '购买鲜花饼伴手礼。',
         images: [],
+        linkName: '',
+        linkUrl: '',
         createdAt: ts,
       },
     ],

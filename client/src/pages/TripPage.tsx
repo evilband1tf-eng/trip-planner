@@ -7,6 +7,7 @@ import {
   EditOutlined,
   EnvironmentOutlined,
   ExpandAltOutlined,
+  LinkOutlined,
   PlusOutlined,
   ScheduleOutlined,
   ShrinkOutlined,
@@ -228,6 +229,17 @@ export function TripPage({ menu }: TripPageProps) {
                             </div>
                           )}
                           {item.notes && <div className="day-item-notes">{item.notes}</div>}
+                          {item.linkUrl && (
+                            <a
+                              className="day-item-link"
+                              href={item.linkUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={item.linkUrl}
+                            >
+                              <LinkOutlined /> {item.linkName || '查看路线'}
+                            </a>
+                          )}
                           {item.images?.length ? (
                             <div className={`day-item-thumbs${item.images.length === 1 ? ' is-single' : ''}`}>
                               <Image.PreviewGroup>

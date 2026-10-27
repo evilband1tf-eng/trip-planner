@@ -27,6 +27,10 @@ export interface ItineraryItem {
   notes: string;
   /** 安排图片（最多 9 张），前端压缩后以 data URL 存储 */
   images: string[];
+  /** 路线名称，例如「酒店→埃菲尔铁塔」 */
+  linkName: string;
+  /** 路线链接（Google 地图等），点击直接拉起对应 App */
+  linkUrl: string;
   createdAt: string;
 }
 
@@ -53,6 +57,8 @@ export interface ItineraryInput {
   location?: string;
   notes?: string;
   images?: string[];
+  linkName?: string;
+  linkUrl?: string;
 }
 
 /** remote 表示数据存在服务端，local 表示降级到浏览器本地存储 */

@@ -12,6 +12,8 @@ interface ItineraryFormValues {
   location?: string;
   notes?: string;
   images?: string[];
+  linkName?: string;
+  linkUrl?: string;
 }
 
 interface ItineraryFormModalProps {
@@ -54,6 +56,8 @@ export function ItineraryFormModal({
         location: initial.location,
         notes: initial.notes,
         images: initial.images ?? [],
+        linkName: initial.linkName ?? '',
+        linkUrl: initial.linkUrl ?? '',
       };
     }
     return {
@@ -63,6 +67,8 @@ export function ItineraryFormModal({
       location: '',
       notes: '',
       images: [],
+      linkName: '',
+      linkUrl: '',
     };
   }, [initial, defaultDate]);
 
@@ -83,6 +89,8 @@ export function ItineraryFormModal({
       location: values.location?.trim() ?? '',
       notes: values.notes?.trim() ?? '',
       images: values.images ?? [],
+      linkName: values.linkName?.trim() ?? '',
+      linkUrl: values.linkUrl?.trim() ?? '',
     });
     setSaving(false);
     if (ok) onCancel();
@@ -143,6 +151,38 @@ export function ItineraryFormModal({
         <Form.Item name="location" label="地点">
           <Input placeholder="例如：清水寺" maxLength={40} allowClear />
         </Form.Item>
+
+        <Row gutter={12}>
+          <Col xs={24} sm={10}>
+            <Form.Item
+              name="linkName"
+              label="路线名称"
+              rules={[{ max: 30, message: '最多 30 个字符' }]}
+            >
+              <Input placeholder="例如：酒店→埃菲尔铁塔" maxLength={30} allowClear />
+            </Form.Item>
+          </Col>
+          <Col xs={24} sm={14}>
+            <Form.Item
+              name="linkUrl"
+              label="路线链接"
+              rules={[
+                {
+                  validator: (_, value) => {
+                    const url = String(value ?? '').trim();
+                    if (!url) return Promise.resolve();
+                    return /^https?:\/\//i.test(url)
+                      ? Promise.resolve()
+                      : Promise.reject(new Error('需以 http:// 或 https:// 开头'));
+                  },
+                },
+              ]}
+              extra="粘贴 Google 地图路线链接；手机上点击会直接打开 Google Maps"
+            >
+              <Input placeholder="https://maps.app.goo.gl/..." allowClear />
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item name="notes" label="备注">
           <Input.TextArea rows={3} maxLength={200} showCount placeholder="交通、预约、注意事项…" />

@@ -145,6 +145,8 @@ async function main() {
       location: item.location,
       notes: item.notes,
       images: Array.isArray(item.images) ? item.images : item.image ? [item.image] : [],
+      linkName: item.linkName,
+      linkUrl: item.linkUrl,
     });
     pushed += 1;
   }

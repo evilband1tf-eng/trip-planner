@@ -57,6 +57,24 @@ function checkImages(images) {
   return null;
 }
 
+/** 校验路线链接（允许为空）：只放行 http/https，避免 javascript: 之类的危险协议 */
+function checkLink(url) {
+  if (url === undefined || url === null || url === '') return null;
+  if (typeof url !== 'string') return '链接格式不正确';
+  const value = url.trim();
+  if (!/^https?:\/\//i.test(value)) return '链接需以 http:// 或 https:// 开头';
+  if (value.length > 1000) return '链接过长，请换一个短一点的';
+  return null;
+}
+
+/** 校验路线名称（允许为空） */
+function checkLinkName(name) {
+  if (name === undefined || name === null || name === '') return null;
+  if (typeof name !== 'string') return '路线名称格式不正确';
+  if (name.trim().length > 30) return '路线名称不能超过 30 个字符';
+  return null;
+}
+
 /** 统一捕获异步处理函数的异常，避免存储层报错时进程挂掉 */
 const wrap = (handler) => (req, res) => {
   Promise.resolve(handler(req, res)).catch((error) => {
@@ -289,6 +307,8 @@ api.post(
     if (!date) return res.status(400).json({ message: '请选择日期' });
     const imageError = checkImages(req.body?.images);
     if (imageError) return res.status(400).json({ message: imageError });
+    const linkError = checkLink(req.body?.linkUrl) || checkLinkName(req.body?.linkName);
+    if (linkError) return res.status(400).json({ message: linkError });
 
     const item = await createItinerary({ ...req.body, title, date });
     if (!item) return res.status(400).json({ message: '行程菜单不存在' });
@@ -303,6 +323,8 @@ api.patch(
   wrap(async (req, res) => {
     const imageError = checkImages(req.body?.images);
     if (imageError) return res.status(400).json({ message: imageError });
+    const linkError = checkLink(req.body?.linkUrl) || checkLinkName(req.body?.linkName);
+    if (linkError) return res.status(400).json({ message: linkError });
 
     const item = await updateItinerary(req.params.id, req.body ?? {});
     if (!item) return res.status(404).json({ message: '行程安排不存在' });
