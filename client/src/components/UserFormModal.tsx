@@ -24,14 +24,9 @@ export function UserFormModal({ open, initial, onCancel, onSubmit }: UserFormMod
   const { message } = AntApp.useApp();
   const [form] = Form.useForm<UserFormValues>();
   const [submitting, setSubmitting] = useState(false);
-  // 每次打开都强制重挂载表单，避免上一次的内容残留
-  const [openCount, setOpenCount] = useState(0);
-  const [lastOpen, setLastOpen] = useState(open);
-  if (open !== lastOpen) {
-    setLastOpen(open);
-    if (open) setOpenCount((count) => count + 1);
-  }
 
+  // 预填依赖挂载时的 initialValues；调用方每次打开都会换 key，
+  // 连同 Form.useForm() 实例一起重建，避免读上一次账号的残留值。
   const isEdit = Boolean(initial);
 
   const handleFinish = async (values: UserFormValues) => {
@@ -61,11 +56,10 @@ export function UserFormModal({ open, initial, onCancel, onSubmit }: UserFormMod
       confirmLoading={submitting}
       onCancel={onCancel}
       onOk={() => form.submit()}
-      destroyOnClose
+      destroyOnHidden
       centered
     >
       <Form<UserFormValues>
-        key={openCount}
         form={form}
         layout="vertical"
         preserve={false}

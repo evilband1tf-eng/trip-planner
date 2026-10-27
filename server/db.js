@@ -17,6 +17,9 @@ const USE_REDIS = Boolean(REDIS_URL && REDIS_TOKEN);
 export const HOME_MENU_ID = 'home';
 export const STORAGE_MODE = USE_REDIS ? 'upstash-redis' : 'json-file';
 
+/** 单条安排最多保留几张图片 */
+export const MAX_ITEM_IMAGES = 9;
+
 /** 内置管理员：首次启动（或数据里没有 admin）时自动创建 */
 export const DEFAULT_ADMIN_USERNAME = 'admin';
 const DEFAULT_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'wlf010918';
@@ -67,7 +70,10 @@ function normalize(raw) {
     if (typeof menu.image !== 'string') menu.image = '';
   });
   next.itineraries.forEach((item) => {
-    if (typeof item.image !== 'string') item.image = '';
+    // 早期版本每条安排只有一张 image，迁移成 images 数组
+    if (!Array.isArray(item.images)) item.images = typeof item.image === 'string' && item.image ? [item.image] : [];
+    item.images = cleanImages(item.images);
+    delete item.image;
   });
 
   // 账号体系：早期版本的数据里没有 users，需要补上内置管理员
@@ -139,6 +145,12 @@ const byOrder = (a, b) => a.order - b.order || a.createdAt.localeCompare(b.creat
 
 const cleanText = (value) => (typeof value === 'string' ? value.trim() : '');
 
+/** 收敛成合法的图片数组：只留 data URL，并限制张数 */
+function cleanImages(value) {
+  if (!Array.isArray(value)) return [];
+  return value.filter((one) => typeof one === 'string' && one.startsWith('data:image/')).slice(0, MAX_ITEM_IMAGES);
+}
+
 export function getState() {
   if (!state) return { menus: [], itineraries: [] };
   return {
@@ -203,7 +215,7 @@ export async function createItinerary(input) {
     title: cleanText(input.title),
     location: cleanText(input.location),
     notes: cleanText(input.notes),
-    image: cleanText(input.image),
+    images: cleanImages(input.images),
     createdAt: new Date().toISOString(),
   };
   state.itineraries.push(item);
@@ -214,9 +226,10 @@ export async function createItinerary(input) {
 export async function updateItinerary(id, patch) {
   const item = state.itineraries.find((one) => one.id === id);
   if (!item) return null;
-  ['date', 'time', 'title', 'location', 'notes', 'image'].forEach((key) => {
+  ['date', 'time', 'title', 'location', 'notes'].forEach((key) => {
     if (patch[key] !== undefined) item[key] = cleanText(patch[key]);
   });
+  if (patch.images !== undefined) item.images = cleanImages(patch.images);
   if (!item.title) item.title = '未命名安排';
   await persist();
   return item;

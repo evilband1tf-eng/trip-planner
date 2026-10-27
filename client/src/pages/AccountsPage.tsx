@@ -17,6 +17,8 @@ export function AccountsPage() {
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
+  // 每次打开都换 key，让弹窗连同表单实例一起重建
+  const [formSeq, setFormSeq] = useState(0);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -35,11 +37,13 @@ export function AccountsPage() {
   }, [isAdmin, remote, reload]);
 
   const openCreate = () => {
+    setFormSeq((seq) => seq + 1);
     setEditing(null);
     setFormOpen(true);
   };
 
   const openEdit = (target: User) => {
+    setFormSeq((seq) => seq + 1);
     setEditing(target);
     setFormOpen(true);
   };
@@ -183,6 +187,7 @@ export function AccountsPage() {
       </Card>
 
       <UserFormModal
+        key={formSeq}
         open={formOpen}
         initial={editing}
         onCancel={() => setFormOpen(false)}

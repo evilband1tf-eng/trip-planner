@@ -6,8 +6,10 @@ import {
   DownOutlined,
   EditOutlined,
   EnvironmentOutlined,
+  ExpandAltOutlined,
   PlusOutlined,
   ScheduleOutlined,
+  ShrinkOutlined,
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useAppData } from '../store/AppDataProvider';
@@ -34,6 +36,9 @@ export function TripPage({ menu }: TripPageProps) {
   const [tripEditOpen, setTripEditOpen] = useState(false);
   // 折叠的日期，默认全部展开
   const [collapsedDates, setCollapsedDates] = useState<string[]>([]);
+  // 每次打开弹窗都换 key，让弹窗连同表单实例一起重建（否则会读到上一次的残留值）
+  const [formSeq, setFormSeq] = useState(0);
+  const [tripFormSeq, setTripFormSeq] = useState(0);
 
   const items = itemsOf(menu.id);
   const grouped = groupByDate(items);
@@ -45,8 +50,15 @@ export function TripPage({ menu }: TripPageProps) {
     setCollapsedDates((prev) => (prev.includes(date) ? prev.filter((one) => one !== date) : [...prev, date]));
   };
 
+  /** 全部日期都已折叠时，按钮改为「打开全部」 */
+  const allCollapsed = days.length > 0 && days.every((date) => collapsedDates.includes(date));
+  const toggleAllDates = () => {
+    setCollapsedDates(allCollapsed ? [] : [...days]);
+  };
+
   /** locked=true 时表示从某一天的卡片点「添加」，日期固定为该天不可修改 */
   const openCreate = (date?: string, locked = false) => {
+    setFormSeq((seq) => seq + 1);
     setEditingItem(null);
     setDateLocked(locked);
     setDefaultDate(date || menu.startDate || today);
@@ -54,6 +66,7 @@ export function TripPage({ menu }: TripPageProps) {
   };
 
   const openEdit = (item: ItineraryItem) => {
+    setFormSeq((seq) => seq + 1);
     setEditingItem(item);
     setDateLocked(false);
     setFormOpen(true);
@@ -109,16 +122,32 @@ export function TripPage({ menu }: TripPageProps) {
             {menu.note && <div className="trip-header-note">{menu.note}</div>}
           </div>
 
-          {canEdit && (
-            <div className="trip-header-actions">
-              <Button icon={<EditOutlined />} onClick={() => setTripEditOpen(true)}>
+          <div className="trip-header-actions">
+            {canEdit && (
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => {
+                  setTripFormSeq((seq) => seq + 1);
+                  setTripEditOpen(true);
+                }}
+              >
                 编辑行程
               </Button>
+            )}
+            {canEdit && (
               <Button type="primary" icon={<PlusOutlined />} onClick={() => openCreate()}>
                 添加安排
               </Button>
-            </div>
-          )}
+            )}
+            {days.length > 0 && (
+              <Button
+                icon={allCollapsed ? <ExpandAltOutlined /> : <ShrinkOutlined />}
+                onClick={toggleAllDates}
+              >
+                {allCollapsed ? '打开全部' : '折叠全部'}
+              </Button>
+            )}
+          </div>
         </div>
       </Card>
 
@@ -199,11 +228,21 @@ export function TripPage({ menu }: TripPageProps) {
                             </div>
                           )}
                           {item.notes && <div className="day-item-notes">{item.notes}</div>}
-                          {item.image && (
-                            <div className="day-item-thumb">
-                              <Image src={item.image} alt={item.title} preview={{ mask: null }} />
+                          {item.images?.length ? (
+                            <div className={`day-item-thumbs${item.images.length === 1 ? ' is-single' : ''}`}>
+                              <Image.PreviewGroup>
+                                {item.images.map((src, imageIndex) => (
+                                  <div className="day-item-thumb" key={`${item.id}-${imageIndex}`}>
+                                    <Image
+                                      src={src}
+                                      alt={`${item.title} 图片 ${imageIndex + 1}`}
+                                      preview={{ mask: null }}
+                                    />
+                                  </div>
+                                ))}
+                              </Image.PreviewGroup>
                             </div>
-                          )}
+                          ) : null}
                         </div>
                         {canEdit && (
                           <div className="day-item-actions">
@@ -246,6 +285,7 @@ export function TripPage({ menu }: TripPageProps) {
       {canEdit && (
         <>
           <ItineraryFormModal
+            key={`itinerary-${formSeq}`}
             open={formOpen}
             menuId={menu.id}
             defaultDate={defaultDate}
@@ -256,6 +296,7 @@ export function TripPage({ menu }: TripPageProps) {
           />
 
           <TripFormModal
+            key={`trip-${tripFormSeq}`}
             open={tripEditOpen}
             title="编辑行程"
             initial={menu}

@@ -28,14 +28,8 @@ export function TripFormModal({ open, title, initial, onCancel, onSubmit }: Trip
   const [form] = Form.useForm<TripFormValues>();
   const [saving, setSaving] = useState(false);
 
-  // 每次打开都重新挂载表单，直接读取 initialValues，确保编辑时内容一定被预填
-  const [openCount, setOpenCount] = useState(0);
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    if (open) setOpenCount((count) => count + 1);
-  }
-
+  // 预填依赖挂载时的 initialValues；调用方每次打开都会换 key，
+  // 连同 Form.useForm() 实例一起重建，才不会读到上一次的残留值。
   const initialValues = useMemo<TripFormValues>(() => {
     if (initial) {
       return {
@@ -84,12 +78,11 @@ export function TripFormModal({ open, title, initial, onCancel, onSubmit }: Trip
       confirmLoading={saving}
       onOk={handleOk}
       onCancel={onCancel}
-      destroyOnClose
+      destroyOnHidden
       maskClosable={!saving}
       width={520}
     >
       <Form
-        key={openCount}
         form={form}
         layout="vertical"
         requiredMark={false}

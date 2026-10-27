@@ -27,6 +27,8 @@ export function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
+  // 每次打开都换 key，让弹窗连同表单实例一起重建
+  const [createSeq, setCreateSeq] = useState(0);
 
   const activeMenu = menus.find((menu) => `/p/${menu.id}` === location.pathname);
   const pageTitle =
@@ -80,7 +82,10 @@ export function AppLayout() {
       onToggle={() => (mobile ? setDrawerOpen(false) : setCollapsed((value) => !value))}
       deleteMode={deleteMode}
       onToggleDeleteMode={handleToggleDeleteMode}
-      onAdd={() => setCreateOpen(true)}
+      onAdd={() => {
+        setCreateSeq((seq) => seq + 1);
+        setCreateOpen(true);
+      }}
       onRequestDelete={handleRequestDelete}
       onNavigate={mobile ? () => setDrawerOpen(false) : undefined}
     />
@@ -152,6 +157,7 @@ export function AppLayout() {
 
       {canEdit && (
         <TripFormModal
+          key={createSeq}
           open={createOpen}
           title="新建行程"
           onCancel={() => setCreateOpen(false)}

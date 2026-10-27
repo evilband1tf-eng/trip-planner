@@ -13,6 +13,7 @@ import {
   deleteItinerary,
   initStore,
   STORAGE_MODE,
+  MAX_ITEM_IMAGES,
   authenticateUser,
   createSession,
   userOfToken,
@@ -31,16 +32,28 @@ const PORT = Number(process.env.PORT) || 8787;
 
 const app = express();
 app.use(cors());
-// 行程图片以 data URL 形式随请求提交，放宽请求体上限
-app.use(express.json({ limit: '8mb' }));
+// 图片以 data URL 形式随请求提交（一条安排最多 9 张），放宽请求体上限
+app.use(express.json({ limit: '32mb' }));
 
 const MAX_IMAGE_CHARS = 4 * 1024 * 1024;
 
-/** 校验行程封面图（允许为空），返回错误文案或 null */
+/** 校验单张图片（允许为空），返回错误文案或 null */
 function checkImage(image) {
   if (image === undefined || image === '') return null;
   if (typeof image !== 'string' || !image.startsWith('data:image/')) return '图片格式不正确';
   if (image.length > MAX_IMAGE_CHARS) return '图片过大，请换一张小一点的照片';
+  return null;
+}
+
+/** 校验安排的图片数组（允许为空），返回错误文案或 null */
+function checkImages(images) {
+  if (images === undefined || images === null) return null;
+  if (!Array.isArray(images)) return '图片格式不正确';
+  if (images.length > MAX_ITEM_IMAGES) return `一条安排最多上传 ${MAX_ITEM_IMAGES} 张图片`;
+  for (const image of images) {
+    const error = checkImage(image);
+    if (error) return error;
+  }
   return null;
 }
 
@@ -274,7 +287,7 @@ api.post(
     const date = String(req.body?.date ?? '').trim();
     if (!title) return res.status(400).json({ message: '请填写行程安排内容' });
     if (!date) return res.status(400).json({ message: '请选择日期' });
-    const imageError = checkImage(req.body?.image);
+    const imageError = checkImages(req.body?.images);
     if (imageError) return res.status(400).json({ message: imageError });
 
     const item = await createItinerary({ ...req.body, title, date });
@@ -288,7 +301,7 @@ api.patch(
   requireAuth,
   requireEditor,
   wrap(async (req, res) => {
-    const imageError = checkImage(req.body?.image);
+    const imageError = checkImages(req.body?.images);
     if (imageError) return res.status(400).json({ message: imageError });
 
     const item = await updateItinerary(req.params.id, req.body ?? {});

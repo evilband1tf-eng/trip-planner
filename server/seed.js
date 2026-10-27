@@ -74,7 +74,7 @@ export function createSeedState() {
         title: '抵达关西机场，前往京都站',
         location: '关西国际机场',
         notes: '购买 ICOCA 卡，入住酒店放行李。',
-        image: '',
+        images: [],
         createdAt: now,
       },
       {
@@ -85,7 +85,7 @@ export function createSeedState() {
         title: '清水寺 + 二年坂散步',
         location: '清水寺',
         notes: '日落前登高看全景。',
-        image: '',
+        images: [],
         createdAt: now,
       },
       {
@@ -96,7 +96,7 @@ export function createSeedState() {
         title: '岚山竹林与渡月桥',
         location: '岚山',
         notes: '尽量早去避开人流。',
-        image: '',
+        images: [],
         createdAt: now,
       },
       {
@@ -107,7 +107,7 @@ export function createSeedState() {
         title: '和服体验 + 伏见稻荷大社',
         location: '伏见稻荷',
         notes: '和服店需提前一天确认预约。',
-        image: '',
+        images: [],
         createdAt: now,
       },
       {
@@ -118,7 +118,7 @@ export function createSeedState() {
         title: '锦市场午餐',
         location: '锦市场',
         notes: '玉子烧、鳗鱼饭。',
-        image: '',
+        images: [],
         createdAt: now,
       },
       {
@@ -129,7 +129,7 @@ export function createSeedState() {
         title: '飞抵大理，入住洱海边民宿',
         location: '大理机场',
         notes: '提前联系民宿接机。',
-        image: '',
+        images: [],
         createdAt: now,
       },
       {
@@ -140,7 +140,7 @@ export function createSeedState() {
         title: '洱海生态廊道骑行',
         location: '才村码头',
         notes: '租电助力车，全程约 30 公里。',
-        image: '',
+        images: [],
         createdAt: now,
       },
       {
@@ -151,7 +151,7 @@ export function createSeedState() {
         title: '大理古城闲逛返程',
         location: '大理古城',
         notes: '购买鲜花饼伴手礼。',
-        image: '',
+        images: [],
         createdAt: now,
       },
     ],

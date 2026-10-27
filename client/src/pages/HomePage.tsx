@@ -29,6 +29,13 @@ export function HomePage() {
   const { message } = AntApp.useApp();
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
+  // 每次打开都换 key，让弹窗连同表单实例一起重建
+  const [createSeq, setCreateSeq] = useState(0);
+
+  const openCreate = () => {
+    setCreateSeq((seq) => seq + 1);
+    setCreateOpen(true);
+  };
 
   const sortedTrips = [...trips].sort(sortTrips);
 
@@ -66,7 +73,7 @@ export function HomePage() {
             </p>
             <div className="home-hero-actions">
               {canEdit && (
-                <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+                <Button type="primary" size="large" icon={<PlusOutlined />} onClick={openCreate}>
                   新建行程
                 </Button>
               )}
@@ -110,7 +117,7 @@ export function HomePage() {
       <div className="section-head">
         <h2 className="section-title">我的行程</h2>
         {canEdit && (
-          <Button type="link" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+          <Button type="link" icon={<PlusOutlined />} onClick={openCreate}>
             新建
           </Button>
         )}
@@ -120,7 +127,7 @@ export function HomePage() {
         <Card className="empty-card">
           <Empty description="还没有行程" image={Empty.PRESENTED_IMAGE_SIMPLE}>
             {canEdit && (
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+              <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
                 新建行程
               </Button>
             )}
@@ -185,6 +192,7 @@ export function HomePage() {
       )}
 
       <TripFormModal
+        key={createSeq}
         open={createOpen}
         title="新建行程"
         onCancel={() => setCreateOpen(false)}

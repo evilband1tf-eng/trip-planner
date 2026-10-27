@@ -25,8 +25,8 @@ export interface ItineraryItem {
   title: string;
   location: string;
   notes: string;
-  /** 安排图片，前端压缩后以 data URL 存储 */
-  image: string;
+  /** 安排图片（最多 9 张），前端压缩后以 data URL 存储 */
+  images: string[];
   createdAt: string;
 }
 
@@ -52,7 +52,7 @@ export interface ItineraryInput {
   title: string;
   location?: string;
   notes?: string;
-  image?: string;
+  images?: string[];
 }
 
 /** remote 表示数据存在服务端，local 表示降级到浏览器本地存储 */

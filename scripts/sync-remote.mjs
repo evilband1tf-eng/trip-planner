@@ -144,7 +144,7 @@ async function main() {
       title: item.title,
       location: item.location,
       notes: item.notes,
-      image: item.image,
+      images: Array.isArray(item.images) ? item.images : item.image ? [item.image] : [],
     });
     pushed += 1;
   }

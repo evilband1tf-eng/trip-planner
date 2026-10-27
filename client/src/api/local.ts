@@ -1,6 +1,7 @@
-import type { AppState, ItineraryInput, ItineraryItem, MenuInput, MenuItem } from '../types';
+import type { AppState, ItineraryItem, MenuInput, MenuItem } from '../types';
 import type { DataSource } from './types';
 import { createId, createSeedState } from './seed';
+import { cleanImages } from '../utils/image';
 
 const STORAGE_KEY = 'trip-planner:state:v1';
 
@@ -39,7 +40,11 @@ function normalize(state: AppState): AppState {
   return {
     menus: [...menus].sort((a, b) => a.order - b.order),
     itineraries: Array.isArray(state.itineraries)
-      ? state.itineraries.map((item) => (typeof item.image === 'string' ? item : { ...item, image: '' }))
+      ? state.itineraries.map((item) => {
+          // 兼容早期只有单张 image 的数据
+          const { image: legacyImage, ...rest } = item as ItineraryItem & { image?: string };
+          return { ...rest, images: cleanImages(item.images ?? (legacyImage ? [legacyImage] : [])) };
+        })
       : [],
   };
 }
@@ -113,7 +118,7 @@ export function createLocalSource(): DataSource {
         title: text(input.title),
         location: text(input.location),
         notes: text(input.notes),
-        image: text(input.image),
+        images: cleanImages(input.images),
         createdAt: nowISO(),
       };
       state = { ...state, itineraries: [...state.itineraries, item] };
@@ -123,13 +128,13 @@ export function createLocalSource(): DataSource {
     async updateItinerary(id, patch) {
       const target = state.itineraries.find((item) => item.id === id);
       if (!target) throw new Error('行程安排不存在');
+      const textFields = ['date', 'time', 'title', 'location', 'notes'] as const;
       const next: ItineraryItem = {
         ...target,
         ...Object.fromEntries(
-          ['date', 'time', 'title', 'location', 'notes', 'image']
-            .filter((key) => patch[key as keyof ItineraryInput] !== undefined)
-            .map((key) => [key, text(patch[key as keyof ItineraryInput])]),
+          textFields.filter((key) => patch[key] !== undefined).map((key) => [key, text(patch[key])]),
         ),
+        images: patch.images === undefined ? target.images : cleanImages(patch.images),
       };
       state = {
         ...state,

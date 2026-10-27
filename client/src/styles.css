@@ -733,9 +733,15 @@ body {
 }
 
 /* 安排图片：按比例展示缩略图，点击放大 */
+.day-item-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
 .day-item-thumb {
   display: inline-flex;
-  margin-top: 8px;
   padding: 4px;
   border: 1px solid #eef0f5;
   border-radius: 8px;
@@ -751,6 +757,14 @@ body {
   max-width: 168px;
   object-fit: contain;
   border-radius: 4px;
+}
+
+/* 多张时排成方图墙，更好辨认 */
+.day-item-thumbs:not(.is-single) .day-item-thumb .ant-image-img {
+  width: 76px;
+  height: 76px;
+  max-width: none;
+  object-fit: cover;
 }
 
 .day-item-actions {
@@ -834,6 +848,65 @@ body {
   gap: 8px;
 }
 
+.image-picker-count {
+  font-size: 12px;
+  color: #9aa1b1;
+}
+
+/* 多图选择器：缩略图墙 + 右上角删除 */
+.image-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.image-list-item {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  padding: 3px;
+  border: 1px solid #e8eaf0;
+  border-radius: 10px;
+  background: #f4f6fa;
+  overflow: hidden;
+}
+
+.image-list-item .ant-image {
+  width: 100%;
+  height: 100%;
+}
+
+.image-list-item .ant-image-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 7px;
+}
+
+.image-list-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(23, 26, 35, 0.6);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.image-list-remove:hover {
+  background: #ff4d4f;
+}
+
 .image-picker-tip {
   font-size: 12px;
   color: #9aa1b1;
@@ -894,10 +967,12 @@ body {
 
   .trip-header-actions {
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .trip-header-actions .ant-btn {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 92px;
   }
 
   .day-card .ant-card-head {

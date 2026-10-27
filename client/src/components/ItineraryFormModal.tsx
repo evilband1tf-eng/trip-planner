@@ -3,7 +3,7 @@ import { Col, DatePicker, Form, Input, Modal, Row, TimePicker } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import type { ItineraryInput, ItineraryItem } from '../types';
-import { ImagePicker } from './ImagePicker';
+import { ImageListPicker } from './ImageListPicker';
 
 interface ItineraryFormValues {
   date: Dayjs;
@@ -11,7 +11,7 @@ interface ItineraryFormValues {
   title: string;
   location?: string;
   notes?: string;
-  image?: string;
+  images?: string[];
 }
 
 interface ItineraryFormModalProps {
@@ -37,15 +37,9 @@ export function ItineraryFormModal({
   const [form] = Form.useForm<ItineraryFormValues>();
   const [saving, setSaving] = useState(false);
 
-  // 每次打开都递增 key，让 Form 重新挂载并直接读取 initialValues，
-  // 避免依赖 destroyOnClose 与 setFieldsValue 的执行时序（时序不稳定时会丢失预填内容）
-  const [openCount, setOpenCount] = useState(0);
-  const [wasOpen, setWasOpen] = useState(open);
-  if (open !== wasOpen) {
-    setWasOpen(open);
-    if (open) setOpenCount((count) => count + 1);
-  }
-
+  // 预填完全依赖本组件挂载时的 initialValues。
+  // 调用方（TripPage）每次打开都会给本组件换一个 key，从而连同 Form.useForm() 的
+  // 表单实例一起重建——只给 <Form> 加 key 是没用的，旧实例的 store 会盖掉 initialValues。
   const isEdit = Boolean(initial);
   const lockDate = dateLocked && !isEdit;
 
@@ -59,7 +53,7 @@ export function ItineraryFormModal({
         title: initial.title,
         location: initial.location,
         notes: initial.notes,
-        image: initial.image || '',
+        images: initial.images ?? [],
       };
     }
     return {
@@ -68,7 +62,7 @@ export function ItineraryFormModal({
       title: '',
       location: '',
       notes: '',
-      image: '',
+      images: [],
     };
   }, [initial, defaultDate]);
 
@@ -88,7 +82,7 @@ export function ItineraryFormModal({
       title: values.title.trim(),
       location: values.location?.trim() ?? '',
       notes: values.notes?.trim() ?? '',
-      image: values.image ?? '',
+      images: values.images ?? [],
     });
     setSaving(false);
     if (ok) onCancel();
@@ -103,12 +97,11 @@ export function ItineraryFormModal({
       confirmLoading={saving}
       onOk={handleOk}
       onCancel={onCancel}
-      destroyOnClose
+      destroyOnHidden
       maskClosable={!saving}
       width={520}
     >
       <Form
-        key={openCount}
         form={form}
         layout="vertical"
         requiredMark={false}
@@ -155,8 +148,8 @@ export function ItineraryFormModal({
           <Input.TextArea rows={3} maxLength={200} showCount placeholder="交通、预约、注意事项…" />
         </Form.Item>
 
-        <Form.Item name="image" label="图片">
-          <ImagePicker />
+        <Form.Item name="images" label="图片">
+          <ImageListPicker />
         </Form.Item>
       </Form>
     </Modal>

@@ -4,6 +4,9 @@ const PASS_THROUGH_BYTES = 250 * 1024; // 小于 250KB 直接保留原图
 const MAX_EDGE = 1400; // 压缩后最长边
 const JPEG_QUALITY = 0.82;
 
+/** 单条安排最多带几张图（服务端按同样上限校验） */
+export const MAX_ITEM_IMAGES = 9;
+
 function readAsDataUrl(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -20,6 +23,14 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     image.onerror = () => reject(new Error('图片解析失败'));
     image.src = src;
   });
+}
+
+/** 把任意值收敛成合法的图片数组：过滤空值与非 data URL，并限制张数 */
+export function cleanImages(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((one): one is string => typeof one === 'string' && one.startsWith('data:image/'))
+    .slice(0, MAX_ITEM_IMAGES);
 }
 
 export async function imageFileToDataUrl(file: File): Promise<string> {
