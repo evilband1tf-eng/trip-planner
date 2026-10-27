@@ -10,6 +10,7 @@ import {
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useAppData } from '../store/AppDataProvider';
+import { useAuth } from '../store/AuthProvider';
 import { MenuIcon } from '../components/MenuIcon';
 import { TripFormModal } from '../components/TripFormModal';
 import { formatRange, getTripStatus, STATUS_META } from '../utils/trip';
@@ -24,6 +25,7 @@ function sortTrips(a: MenuItem, b: MenuItem): number {
 
 export function HomePage() {
   const { trips, itineraries, mode, createMenu } = useAppData();
+  const { canEdit } = useAuth();
   const { message } = AntApp.useApp();
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
@@ -63,9 +65,11 @@ export function HomePage() {
               在左侧菜单里创建你的行程，按天记录交通、住宿与游玩安排，随时随地查看与调整。
             </p>
             <div className="home-hero-actions">
-              <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-                新建行程
-              </Button>
+              {canEdit && (
+                <Button type="primary" size="large" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+                  新建行程
+                </Button>
+              )}
               {sortedTrips.length > 0 && (
                 <Button
                   size="large"
@@ -105,17 +109,21 @@ export function HomePage() {
 
       <div className="section-head">
         <h2 className="section-title">我的行程</h2>
-        <Button type="link" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-          新建
-        </Button>
+        {canEdit && (
+          <Button type="link" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+            新建
+          </Button>
+        )}
       </div>
 
       {sortedTrips.length === 0 ? (
         <Card className="empty-card">
-          <Empty description="还没有行程，先创建第一个吧" image={Empty.PRESENTED_IMAGE_SIMPLE}>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-              新建行程
-            </Button>
+          <Empty description="还没有行程" image={Empty.PRESENTED_IMAGE_SIMPLE}>
+            {canEdit && (
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+                新建行程
+              </Button>
+            )}
           </Empty>
         </Card>
       ) : (

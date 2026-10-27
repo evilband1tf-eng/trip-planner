@@ -57,3 +57,29 @@ export interface ItineraryInput {
 
 /** remote 表示数据存在服务端，local 表示降级到浏览器本地存储 */
 export type DataMode = 'remote' | 'local';
+
+/** admin=管理员，editor=可查看编辑，viewer=仅查看 */
+export type UserRole = 'admin' | 'editor' | 'viewer';
+
+export interface User {
+  id: string;
+  username: string;
+  nickname: string;
+  role: UserRole;
+  createdAt: string;
+}
+
+export interface UserInput {
+  username: string;
+  nickname?: string;
+  /** 编辑时留空表示不修改密码 */
+  password?: string;
+  role: UserRole;
+}
+
+/** 修改自己的信息 */
+export interface SelfUpdateInput {
+  nickname?: string;
+  oldPassword?: string;
+  newPassword?: string;
+}

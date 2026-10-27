@@ -1,19 +1,17 @@
 import type { DataSource } from './types';
+import { API_BASE, PROBE_TIMEOUT } from './client';
 import { createLocalSource } from './local';
 import { createRemoteSource } from './remote';
 
-const API_BASE = (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || '/api';
 const FORCE_MODE = (import.meta.env.VITE_DATA_MODE as string | undefined) || '';
-
-// 配置了完整地址（线上后端）时，免费实例从休眠中唤醒可能要几十秒，需要更长的探测时间
-const PROBE_TIMEOUT = /^https?:\/\//i.test(API_BASE) ? 25000 : 2500;
 
 let sourcePromise: Promise<DataSource> | null = null;
 
 /**
  * 探测服务端是否可用：
- * - 本地开发 / 自建服务（npm run dev 或 npm start）：使用服务端 JSON 数据库
- * - 静态托管（如 GitHub Pages）：自动降级为浏览器本地存储，站点无需后端也能用
+ * - 本地开发 / 自建服务（npm run dev 或 npm start）：使用服务端数据库
+ * - 静态托管（如 GitHub Pages，且后端不可达）：自动降级为浏览器本地存储
+ * /health 是唯一无需登录的接口，因此可以直接用来探测
  */
 async function probeRemote(): Promise<boolean> {
   if (FORCE_MODE === 'local') return false;
@@ -46,7 +44,7 @@ export function getDataSource(): Promise<DataSource> {
   if (!sourcePromise) {
     sourcePromise = (async () => {
       const remoteAvailable = await probeRemote();
-      return remoteAvailable ? createRemoteSource(API_BASE) : createLocalSource();
+      return remoteAvailable ? createRemoteSource() : createLocalSource();
     })();
   }
   return sourcePromise;

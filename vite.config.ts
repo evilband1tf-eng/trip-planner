@@ -20,7 +20,8 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
-    chunkSizeWarningLimit: 1000,
+    // antd 整体打包（含 Table / Dropdown 等账号管理组件）约 1.2MB，属预期体积
+    chunkSizeWarningLimit: 1300,
     rollupOptions: {
       output: {
         manualChunks: {

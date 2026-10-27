@@ -3,8 +3,10 @@ import { Alert, App as AntApp, Button, Drawer, Layout } from 'antd';
 import { MenuOutlined } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SideMenu } from './SideMenu';
+import { AccountMenu } from '../components/AccountMenu';
 import { TripFormModal } from '../components/TripFormModal';
 import { useAppData } from '../store/AppDataProvider';
+import { useAuth } from '../store/AuthProvider';
 import { useIsMobile } from '../hooks/useIsMobile';
 import type { MenuInput, MenuItem } from '../types';
 
@@ -15,6 +17,7 @@ const SIDER_COLLAPSED_WIDTH = 76;
 
 export function AppLayout() {
   const { menus, createMenu, deleteMenu } = useAppData();
+  const { canEdit } = useAuth();
   const { message, modal } = AntApp.useApp();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -26,8 +29,11 @@ export function AppLayout() {
   const [createOpen, setCreateOpen] = useState(false);
 
   const activeMenu = menus.find((menu) => `/p/${menu.id}` === location.pathname);
+  const pageTitle =
+    location.pathname === '/accounts' ? '账号管理' : (activeMenu?.name ?? '行程规划');
 
   const handleToggleDeleteMode = () => {
+    if (!canEdit) return;
     if (deleteMode) {
       setDeleteMode(false);
       return;
@@ -92,7 +98,8 @@ export function AppLayout() {
               icon={<MenuOutlined />}
               onClick={() => setDrawerOpen(true)}
             />
-            <span className="app-mobile-title">{activeMenu?.name ?? '行程规划'}</span>
+            <span className="app-mobile-title">{pageTitle}</span>
+            <AccountMenu compact />
           </div>
 
           <Drawer
@@ -120,26 +127,37 @@ export function AppLayout() {
         </Sider>
       )}
 
-      <Content className="app-content">
-        {deleteMode && (
-          <Alert
-            type="warning"
-            showIcon
-            closable
-            className="app-delete-alert"
-            message="删除模式：点击菜单右侧的垃圾桶图标即可删除对应行程"
-            onClose={() => setDeleteMode(false)}
-          />
+      <Layout className="app-main">
+        {!isMobile && (
+          <div className="app-topbar">
+            <span className="app-topbar-title">{pageTitle}</span>
+            <AccountMenu />
+          </div>
         )}
-        <Outlet />
-      </Content>
 
-      <TripFormModal
-        open={createOpen}
-        title="新建行程"
-        onCancel={() => setCreateOpen(false)}
-        onSubmit={handleCreateSubmit}
-      />
+        <Content className="app-content">
+          {deleteMode && (
+            <Alert
+              type="warning"
+              showIcon
+              closable
+              className="app-delete-alert"
+              message="删除模式：点击菜单右侧的垃圾桶图标即可删除对应行程"
+              onClose={() => setDeleteMode(false)}
+            />
+          )}
+          <Outlet />
+        </Content>
+      </Layout>
+
+      {canEdit && (
+        <TripFormModal
+          open={createOpen}
+          title="新建行程"
+          onCancel={() => setCreateOpen(false)}
+          onSubmit={handleCreateSubmit}
+        />
+      )}
     </Layout>
   );
 }

@@ -226,6 +226,8 @@ body {
 }
 
 .app-mobile-title {
+  flex: 1;
+  min-width: 0;
   font-size: 16px;
   font-weight: 600;
   color: #1f2430;
@@ -927,5 +929,316 @@ body {
 
   .home-hero-badge {
     display: none;
+  }
+}
+
+/* ---------------- 顶栏与账号 ---------------- */
+.app-main {
+  min-width: 0;
+}
+
+.app-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  height: 60px;
+  padding: 0 28px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid #eef0f4;
+}
+
+.app-topbar-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2430;
+}
+
+.account-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px 4px 4px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: #1f2430;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.account-trigger:hover {
+  background: #f2f5ff;
+  border-color: #e2e8f7;
+}
+
+.account-trigger.is-compact {
+  padding: 2px;
+}
+
+.account-avatar.ant-avatar {
+  background: linear-gradient(135deg, #2f6bff, #6f9bff);
+  font-weight: 600;
+}
+
+.account-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-caret {
+  font-size: 10px;
+  color: #8a90a2;
+}
+
+.account-menu-head {
+  padding: 2px 0;
+}
+
+.account-menu-name {
+  font-weight: 600;
+  color: #1f2430;
+}
+
+.account-menu-meta {
+  font-size: 12px;
+  color: #8a90a2;
+}
+
+.app-booting {
+  max-width: 640px;
+  margin: 80px auto;
+  padding: 0 20px;
+}
+
+/* ---------------- 登录页 ---------------- */
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 26px;
+  padding: 40px 20px;
+  background:
+    radial-gradient(circle at 20% 18%, rgba(47, 107, 255, 0.14), transparent 45%),
+    radial-gradient(circle at 82% 78%, rgba(120, 90, 255, 0.12), transparent 42%),
+    #f5f6fa;
+}
+
+.login-brand {
+  text-align: center;
+}
+
+.login-brand-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #1f2430;
+}
+
+.login-brand-desc {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: #8a90a2;
+}
+
+.login-card.ant-card {
+  width: 100%;
+  max-width: 380px;
+  border-radius: 18px;
+  box-shadow: 0 18px 48px rgba(31, 36, 48, 0.08);
+}
+
+.login-card .ant-card-body {
+  padding: 30px 26px 22px;
+}
+
+.login-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2430;
+}
+
+.login-subtitle {
+  margin: 6px 0 18px;
+  font-size: 13px;
+  color: #8a90a2;
+}
+
+.login-error {
+  margin-bottom: 16px;
+}
+
+.login-submit {
+  height: 44px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+.login-tip {
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #a0a5b4;
+}
+
+/* ---------------- 日期卡片折叠 ---------------- */
+.day-title {
+  cursor: pointer;
+  user-select: none;
+}
+
+.day-caret {
+  font-size: 11px;
+  color: #8a90a2;
+  transition: transform 0.2s ease;
+}
+
+.day-caret.is-collapsed {
+  transform: rotate(-90deg);
+}
+
+.day-card.is-collapsed .ant-card-body {
+  display: none;
+}
+
+.day-card.is-collapsed .ant-card-head {
+  border-bottom-color: transparent;
+}
+
+.day-collapsed-spot {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 100%;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: #f4f6fb;
+  color: #5b6478;
+  font-size: 12px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-count {
+  font-size: 12px;
+  color: #8a90a2;
+}
+
+/* ---------------- 账号管理 ---------------- */
+.accounts-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.accounts-title {
+  margin: 0;
+  font-size: 20px;
+  color: #1f2430;
+}
+
+.accounts-desc {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: #8a90a2;
+}
+
+.accounts-tools {
+  display: flex;
+  gap: 8px;
+}
+
+.accounts-alert {
+  margin-bottom: 16px;
+}
+
+.account-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-cell-name {
+  font-weight: 600;
+}
+
+.account-actions {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.role-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.role-group .ant-radio-wrapper {
+  align-items: flex-start;
+  margin-inline-end: 0;
+}
+
+.role-option {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.4;
+}
+
+.role-option-label {
+  font-weight: 600;
+}
+
+.role-option-desc {
+  font-size: 12px;
+  color: #8a90a2;
+}
+
+.form-section-title {
+  margin: 4px 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #8a90a2;
+}
+
+@media (max-width: 768px) {
+  .login-page {
+    justify-content: flex-start;
+    padding-top: 56px;
+  }
+
+  .login-title {
+    font-size: 18px;
+  }
+
+  .accounts-head {
+    flex-direction: column;
+  }
+
+  .accounts-tools {
+    width: 100%;
+  }
+
+  .accounts-tools .ant-btn {
+    flex: 1;
+  }
+
+  .day-collapsed-spot {
+    max-width: 180px;
   }
 }

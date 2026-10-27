@@ -7,9 +7,11 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   PlusOutlined,
+  TeamOutlined,
 } from '@ant-design/icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppData } from '../store/AppDataProvider';
+import { useAuth } from '../store/AuthProvider';
 import { MenuIcon } from '../components/MenuIcon';
 import type { MenuItem } from '../types';
 
@@ -35,38 +37,57 @@ export function SideMenu({
   onNavigate,
 }: SideMenuProps) {
   const { menus } = useAppData();
+  const { isAdmin, canEdit } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const toggleIcon: ReactNode = mobile ? <CloseOutlined /> : collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />;
 
-  const items = menus.map((menu) => ({
-    key: `/p/${menu.id}`,
-    icon: <MenuIcon name={menu.icon} />,
-    label: collapsed ? (
-      menu.name
-    ) : (
-      <span className="side-menu-label">
-        <span className="side-menu-text">{menu.name}</span>
-        {deleteMode && menu.type !== 'home' ? (
-          <Button
-            type="text"
-            size="small"
-            className="side-menu-delete"
-            aria-label={`删除${menu.name}`}
-            icon={<DeleteOutlined />}
-            onClick={(event) => {
-              event.stopPropagation();
-              event.preventDefault();
-              onRequestDelete(menu);
-            }}
-          />
-        ) : (
-          <DownOutlined className="side-menu-arrow" />
-        )}
-      </span>
-    ),
-  }));
+  const items = [
+    ...menus.map((menu) => ({
+      key: `/p/${menu.id}`,
+      icon: <MenuIcon name={menu.icon} />,
+      label: collapsed ? (
+        menu.name
+      ) : (
+        <span className="side-menu-label">
+          <span className="side-menu-text">{menu.name}</span>
+          {canEdit && deleteMode && menu.type !== 'home' ? (
+            <Button
+              type="text"
+              size="small"
+              className="side-menu-delete"
+              aria-label={`删除${menu.name}`}
+              icon={<DeleteOutlined />}
+              onClick={(event) => {
+                event.stopPropagation();
+                event.preventDefault();
+                onRequestDelete(menu);
+              }}
+            />
+          ) : (
+            <DownOutlined className="side-menu-arrow" />
+          )}
+        </span>
+      ),
+    })),
+    // 账号管理仅管理员可见
+    ...(isAdmin
+      ? [
+          {
+            key: '/accounts',
+            icon: <TeamOutlined />,
+            label: collapsed ? (
+              '账号管理'
+            ) : (
+              <span className="side-menu-label">
+                <span className="side-menu-text">账号管理</span>
+              </span>
+            ),
+          },
+        ]
+      : []),
+  ];
 
   return (
     <div className="side-menu">
@@ -90,7 +111,7 @@ export function SideMenu({
           }}
         />
 
-        {!collapsed && (
+        {!collapsed && canEdit && (
           <div className="side-menu-tools">
             <Tooltip title="新建行程" placement="right">
               <Button type="text" className="tool-btn" aria-label="新建行程" icon={<PlusOutlined />} onClick={onAdd} />
