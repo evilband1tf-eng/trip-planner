@@ -3,6 +3,8 @@ import type { DataSource } from './types';
 
 async function request<T>(base: string, path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${base}${path}`, {
+    // 避免浏览器用 ETag 缓存返回 304（304 会让 response.ok 为 false）
+    cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
     ...init,
   });

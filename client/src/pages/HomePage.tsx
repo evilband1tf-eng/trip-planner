@@ -23,7 +23,7 @@ function sortTrips(a: MenuItem, b: MenuItem): number {
 }
 
 export function HomePage() {
-  const { trips, itineraries, createMenu } = useAppData();
+  const { trips, itineraries, mode, createMenu } = useAppData();
   const { message } = AntApp.useApp();
   const navigate = useNavigate();
   const [createOpen, setCreateOpen] = useState(false);
@@ -50,7 +50,14 @@ export function HomePage() {
       <Card className="home-hero">
         <div className="home-hero-inner">
           <div className="home-hero-text">
-            <div className="home-hero-date">{dayjs().format('YYYY年M月D日 dddd')}</div>
+            <div className="home-hero-date">
+              {dayjs().format('YYYY年M月D日 dddd')}
+              {mode && (
+                <Tag color={mode === 'remote' ? 'blue' : 'default'} className="home-mode-tag">
+                  {mode === 'remote' ? '云端数据' : '本地数据'}
+                </Tag>
+              )}
+            </div>
             <h1 className="home-hero-title">把每一次出发，都提前安排好</h1>
             <p className="home-hero-desc">
               在左侧菜单里创建你的行程，按天记录交通、住宿与游玩安排，随时随地查看与调整。

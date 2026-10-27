@@ -23,14 +23,21 @@ async function probeRemote(): Promise<boolean> {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), PROBE_TIMEOUT);
     const response = await fetch(`${API_BASE}/health`, {
+      cache: 'no-store',
       signal: controller.signal,
       headers: { Accept: 'application/json' },
     });
     window.clearTimeout(timer);
-    if (!response.ok) return false;
+    if (!response.ok) {
+      console.warn(`[trip-planner] 接口不可用（HTTP ${response.status}），已退回本地存储：${API_BASE}/health`);
+      return false;
+    }
     const data = (await response.json()) as { ok?: boolean };
-    return data?.ok === true;
-  } catch {
+    const healthy = data?.ok === true;
+    if (!healthy) console.warn('[trip-planner] 健康检查未通过，已退回本地存储', data);
+    return healthy;
+  } catch (error) {
+    console.warn(`[trip-planner] 接口探测失败，已退回本地存储：${API_BASE}/health`, error);
     return false;
   }
 }
