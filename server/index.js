@@ -11,6 +11,8 @@ import {
   createItinerary,
   updateItinerary,
   deleteItinerary,
+  initStore,
+  STORAGE_MODE,
 } from './db.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -31,71 +33,97 @@ function checkImage(image) {
   return null;
 }
 
+/** 统一捕获异步处理函数的异常，避免存储层报错时进程挂掉 */
+const wrap = (handler) => (req, res) => {
+  Promise.resolve(handler(req, res)).catch((error) => {
+    console.error('[api] 处理请求失败：', error);
+    if (!res.headersSent) res.status(500).json({ message: '服务端存储异常，请稍后重试' });
+  });
+};
+
 const api = express.Router();
 
 // 前端通过该接口判断是否启用服务端存储（否则退回浏览器本地存储）
 api.get('/health', (_req, res) => {
-  res.json({ ok: true, storage: 'json-file', time: new Date().toISOString() });
+  res.json({ ok: true, storage: STORAGE_MODE, time: new Date().toISOString() });
 });
 
 api.get('/state', (_req, res) => {
   res.json(getState());
 });
 
-api.post('/menus', (req, res) => {
-  const name = String(req.body?.name ?? '').trim();
-  if (!name) return res.status(400).json({ message: '请填写行程名称' });
-  if (name.length > 30) return res.status(400).json({ message: '行程名称不能超过 30 个字符' });
-  const imageError = checkImage(req.body?.image);
-  if (imageError) return res.status(400).json({ message: imageError });
+api.post(
+  '/menus',
+  wrap(async (req, res) => {
+    const name = String(req.body?.name ?? '').trim();
+    if (!name) return res.status(400).json({ message: '请填写行程名称' });
+    if (name.length > 30) return res.status(400).json({ message: '行程名称不能超过 30 个字符' });
+    const imageError = checkImage(req.body?.image);
+    if (imageError) return res.status(400).json({ message: imageError });
 
-  const menu = createMenu({ ...req.body, name });
-  return res.status(201).json(menu);
-});
+    const menu = await createMenu({ ...req.body, name });
+    return res.status(201).json(menu);
+  }),
+);
 
-api.patch('/menus/:id', (req, res) => {
-  const imageError = checkImage(req.body?.image);
-  if (imageError) return res.status(400).json({ message: imageError });
+api.patch(
+  '/menus/:id',
+  wrap(async (req, res) => {
+    const imageError = checkImage(req.body?.image);
+    if (imageError) return res.status(400).json({ message: imageError });
 
-  const menu = updateMenu(req.params.id, req.body ?? {});
-  if (!menu) return res.status(404).json({ message: '菜单不存在' });
-  return res.json(menu);
-});
+    const menu = await updateMenu(req.params.id, req.body ?? {});
+    if (!menu) return res.status(404).json({ message: '菜单不存在' });
+    return res.json(menu);
+  }),
+);
 
-api.delete('/menus/:id', (req, res) => {
-  if (req.params.id === 'home') return res.status(400).json({ message: '首页菜单不可删除' });
-  const ok = deleteMenu(req.params.id);
-  if (!ok) return res.status(404).json({ message: '菜单不存在' });
-  return res.status(204).end();
-});
+api.delete(
+  '/menus/:id',
+  wrap(async (req, res) => {
+    if (req.params.id === 'home') return res.status(400).json({ message: '首页菜单不可删除' });
+    const ok = await deleteMenu(req.params.id);
+    if (!ok) return res.status(404).json({ message: '菜单不存在' });
+    return res.status(204).end();
+  }),
+);
 
-api.post('/itineraries', (req, res) => {
-  const title = String(req.body?.title ?? '').trim();
-  const date = String(req.body?.date ?? '').trim();
-  if (!title) return res.status(400).json({ message: '请填写行程安排内容' });
-  if (!date) return res.status(400).json({ message: '请选择日期' });
-  const imageError = checkImage(req.body?.image);
-  if (imageError) return res.status(400).json({ message: imageError });
+api.post(
+  '/itineraries',
+  wrap(async (req, res) => {
+    const title = String(req.body?.title ?? '').trim();
+    const date = String(req.body?.date ?? '').trim();
+    if (!title) return res.status(400).json({ message: '请填写行程安排内容' });
+    if (!date) return res.status(400).json({ message: '请选择日期' });
+    const imageError = checkImage(req.body?.image);
+    if (imageError) return res.status(400).json({ message: imageError });
 
-  const item = createItinerary({ ...req.body, title, date });
-  if (!item) return res.status(400).json({ message: '行程菜单不存在' });
-  return res.status(201).json(item);
-});
+    const item = await createItinerary({ ...req.body, title, date });
+    if (!item) return res.status(400).json({ message: '行程菜单不存在' });
+    return res.status(201).json(item);
+  }),
+);
 
-api.patch('/itineraries/:id', (req, res) => {
-  const imageError = checkImage(req.body?.image);
-  if (imageError) return res.status(400).json({ message: imageError });
+api.patch(
+  '/itineraries/:id',
+  wrap(async (req, res) => {
+    const imageError = checkImage(req.body?.image);
+    if (imageError) return res.status(400).json({ message: imageError });
 
-  const item = updateItinerary(req.params.id, req.body ?? {});
-  if (!item) return res.status(404).json({ message: '行程安排不存在' });
-  return res.json(item);
-});
+    const item = await updateItinerary(req.params.id, req.body ?? {});
+    if (!item) return res.status(404).json({ message: '行程安排不存在' });
+    return res.json(item);
+  }),
+);
 
-api.delete('/itineraries/:id', (req, res) => {
-  const ok = deleteItinerary(req.params.id);
-  if (!ok) return res.status(404).json({ message: '行程安排不存在' });
-  return res.status(204).end();
-});
+api.delete(
+  '/itineraries/:id',
+  wrap(async (req, res) => {
+    const ok = await deleteItinerary(req.params.id);
+    if (!ok) return res.status(404).json({ message: '行程安排不存在' });
+    return res.status(204).end();
+  }),
+);
 
 app.use('/api', api);
 
@@ -117,6 +145,14 @@ if (fs.existsSync(distDir)) {
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`[trip-planner] API server ready: http://127.0.0.1:${PORT}`);
+async function start() {
+  await initStore();
+  app.listen(PORT, () => {
+    console.log(`[trip-planner] API server ready: http://127.0.0.1:${PORT} （存储：${STORAGE_MODE}）`);
+  });
+}
+
+start().catch((error) => {
+  console.error('[trip-planner] 启动失败：', error);
+  process.exit(1);
 });
