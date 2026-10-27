@@ -113,6 +113,13 @@ git push -u origin main
 
 > 免费实例闲置 15 分钟会休眠，朋友首次打开需要等十几秒到几十秒（前端探测超时已放宽到 25 秒，会自动等待唤醒）。
 
+**接着配置持久化存储（必做，否则重新部署就丢数据）**：
+
+1. 注册 <https://upstash.com>，**Create Database** → 名称随意（如 `trip-planner`）→ 类型 `Regional` 或 `Global` → 区域选 `ap-southeast-1`（新加坡，离 Render 节点最近）→ Free 计划。
+2. 进入数据库详情页的 **REST API** 区域，复制 `UPSTASH_REDIS_REST_URL` 和 `UPSTASH_REDIS_REST_TOKEN`。
+3. 在 Render 服务页 **Environment → Add Environment Variable** 里加这两条（Key 用上面两个名字），保存后会自动重新部署。
+4. 再访问 `/api/health`，`storage` 字段应为 `upstash-redis`（没配时是 `json-file`，即写本地临时磁盘）。
+
 ### 第 3 步：告诉前端接口地址
 
 仓库 **Settings → Secrets and variables → Actions → Variables → New repository variable**：
@@ -139,7 +146,7 @@ npm run sync:remote -- https://trip-planner-api.onrender.com/api
 
 ### 上线后的注意事项
 
-- **数据持久化**：Render 免费实例磁盘是临时的，重新部署 / 重启后 `server/data/db.json` 会被重置成示例数据，重新执行第 5 步即可恢复。想长期保存需升级并挂载 Persistent Disk（付费），或改用免费的 MongoDB Atlas / Supabase（需改 `server/db.js`）。
+- **数据持久化**：配好 `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` 后，所有数据存在 Upstash 免费 Redis 里，重新部署、重启、休眠唤醒都不会丢；`/api/health` 的 `storage` 是 `upstash-redis` 才算生效。没配时退回写本地 `server/data/db.json`，而 Render 免费实例磁盘是临时的，重启即重置成示例数据。
 - **没有登录鉴权**：拿到链接的人都能查看和修改行程。
 - **图片**：图片压缩后以 data URL 存在行程记录里，会随同步一起上传，不需要额外的对象存储。
 - **只想发布静态站**：删掉仓库变量 `VITE_API_BASE` 再 push 一次即可。
