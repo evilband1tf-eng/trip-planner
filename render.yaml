@@ -1,0 +1,15 @@
+# Render 部署蓝图：只部署后端接口（前端交给 GitHub Pages）
+# 在 Render 里选择 New → Blueprint，选中本仓库即可自动按此文件创建服务
+services:
+  - type: web
+    name: trip-planner-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      # PORT 由 Render 自动注入，server/index.js 会读取 process.env.PORT
