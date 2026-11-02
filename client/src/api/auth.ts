@@ -1,5 +1,5 @@
 import type { SelfUpdateInput, User, UserInput } from '../types';
-import { apiRequest, clearToken, getToken, setToken } from './client';
+import { ApiError, apiRequest, clearToken, getToken, setToken } from './client';
 
 /** 登录（失败时抛出 ApiError，带服务端提示文案） */
 export async function login(username: string, password: string): Promise<User> {
@@ -17,9 +17,13 @@ export async function fetchMe(): Promise<User | null> {
   if (!getToken()) return null;
   try {
     return await apiRequest<User>('/auth/me', { skipAuthRedirect: true });
-  } catch {
-    clearToken();
-    return null;
+  } catch (error) {
+    // 只有明确的登录失效才清 token；网络异常时保留登录态，交给上层做离线展示
+    if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+      clearToken();
+      return null;
+    }
+    throw error;
   }
 }
 

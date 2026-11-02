@@ -1,0 +1,28 @@
+name: Keep API Awake
+
+# Render 免费实例闲置约 15 分钟就会休眠，首次访问要等 30-60 秒唤醒。
+# 每 10 分钟探活一次，让实例保持醒着，避免首开变慢。
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping health endpoint
+        run: |
+          url="https://trip-planner-api-t8a4.onrender.com/api/health"
+          for i in 1 2 3; do
+            code=$(curl -s -o /tmp/health.json -w '%{http_code}' --max-time 60 "$url" || true)
+            echo "第 $i 次探测：HTTP $code"
+            if [ "$code" = "200" ]; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "健康检查连续失败" >&2
+          exit 1

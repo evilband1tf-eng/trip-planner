@@ -3,7 +3,10 @@ export const API_BASE =
   (import.meta.env.VITE_API_BASE as string | undefined)?.replace(/\/$/, '') || '/api';
 
 // 配置了完整地址（线上后端）时，免费实例从休眠中唤醒可能要几十秒，需要更长的探测时间
-export const PROBE_TIMEOUT = /^https?:\/\//i.test(API_BASE) ? 25000 : 2500;
+export const PROBE_TIMEOUT = /^https?:\/\//i.test(API_BASE) ? 45000 : 2500;
+
+// 线上实例可能刚好在休眠唤醒或重新部署，失败后隔一会儿再试一次；本地开发不需要重试
+export const PROBE_RETRY_DELAY = /^https?:\/\//i.test(API_BASE) ? 1500 : 0;
 
 const TOKEN_KEY = 'trip-planner:token';
 

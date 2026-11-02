@@ -133,7 +133,11 @@ git push -u origin main
    - 手动创建也行：**New → Web Service** → 选仓库 → Runtime `Node` → Build Command `npm ci` → Start Command `npm start` → Plan `Free`。
 3. 部署完拿到接口域名，形如 `https://trip-planner-api.onrender.com`，先访问 `https://trip-planner-api.onrender.com/api/health`，应返回 `{"ok":true,...}`。
 
-> 免费实例闲置 15 分钟会休眠，朋友首次打开需要等十几秒到几十秒（前端探测超时已放宽到 25 秒，会自动等待唤醒）。
+> 免费实例闲置 15 分钟会休眠，首次打开要等 30–60 秒唤醒。仓库已内置 `.github/workflows/keepalive.yml`，每 10 分钟自动探活一次让实例保持醒着（推送到 main 后生效）。
+>
+> 额度注意：Render 免费账号每月 750 实例小时，单个服务常驻约 730 小时刚好够用；如果账号里再加第二个免费服务就会超额，月底前会被暂停。
+>
+> 前端开机体验：探测超时 45 秒且失败后重试一次；命中过云端的设备会把身份与最近一次数据缓存在浏览器，下次冷启动先秒开上次同步的数据并提示「正在连接云端」，不会直接掉成本机示例数据。云端真连不上时会出现黄色提示条，可手动「重新连接」或「改用本机数据」。
 
 **接着配置持久化存储（必做，否则重新部署就丢数据）**：
 

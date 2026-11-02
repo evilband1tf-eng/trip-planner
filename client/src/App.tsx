@@ -49,6 +49,7 @@ function AuthGate() {
   if (!ready) {
     return (
       <div className="app-booting">
+        <p className="app-booting-tip">正在连接云端数据，首次打开可能需要几十秒…</p>
         <Skeleton active paragraph={{ rows: 4 }} />
       </div>
     );

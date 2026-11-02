@@ -4,6 +4,7 @@ import { MenuOutlined } from '@ant-design/icons';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { SideMenu } from './SideMenu';
 import { AccountMenu } from '../components/AccountMenu';
+import { CloudStatusBar } from '../components/CloudStatusBar';
 import { TripFormModal } from '../components/TripFormModal';
 import { useAppData } from '../store/AppDataProvider';
 import { useAuth } from '../store/AuthProvider';
@@ -141,6 +142,7 @@ export function AppLayout() {
         )}
 
         <Content className="app-content">
+          <CloudStatusBar />
           {deleteMode && (
             <Alert
               type="warning"

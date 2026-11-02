@@ -1120,6 +1120,18 @@ body {
   padding: 0 20px;
 }
 
+.app-booting-tip {
+  margin: 0 0 16px;
+  color: #6b7280;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* 云端连接状态提示条 */
+.cloud-status {
+  margin-bottom: 12px;
+}
+
 /* ---------------- 登录页 ---------------- */
 .login-page {
   min-height: 100vh;

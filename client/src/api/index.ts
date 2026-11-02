@@ -1,5 +1,5 @@
 import type { DataSource } from './types';
-import { API_BASE, PROBE_TIMEOUT } from './client';
+import { API_BASE, PROBE_RETRY_DELAY, PROBE_TIMEOUT } from './client';
 import { createLocalSource } from './local';
 import { createRemoteSource } from './remote';
 
@@ -13,10 +13,7 @@ let sourcePromise: Promise<DataSource> | null = null;
  * - 静态托管（如 GitHub Pages，且后端不可达）：自动降级为浏览器本地存储
  * /health 是唯一无需登录的接口，因此可以直接用来探测
  */
-async function probeRemote(): Promise<boolean> {
-  if (FORCE_MODE === 'local') return false;
-  if (FORCE_MODE === 'remote') return true;
-
+async function probeOnce(): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timer = window.setTimeout(() => controller.abort(), PROBE_TIMEOUT);
@@ -38,6 +35,22 @@ async function probeRemote(): Promise<boolean> {
     console.warn(`[trip-planner] 接口探测失败，已退回本地存储：${API_BASE}/health`, error);
     return false;
   }
+}
+
+async function probeRemote(): Promise<boolean> {
+  if (FORCE_MODE === 'local') return false;
+  if (FORCE_MODE === 'remote') return true;
+
+  // 线上实例可能正在休眠唤醒或重新部署，失败后再试一次，避免直接给用户本机数据
+  const attempts = PROBE_RETRY_DELAY > 0 ? 2 : 1;
+  for (let attempt = 1; attempt <= attempts; attempt += 1) {
+    if (await probeOnce()) return true;
+    if (attempt < attempts) {
+      console.warn(`[trip-planner] 第 ${attempt} 次探测失败，${PROBE_RETRY_DELAY}ms 后重试`);
+      await new Promise((resolve) => window.setTimeout(resolve, PROBE_RETRY_DELAY));
+    }
+  }
+  return false;
 }
 
 export function getDataSource(): Promise<DataSource> {
