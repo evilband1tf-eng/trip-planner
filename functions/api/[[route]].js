@@ -50,8 +50,15 @@ const fail = (status, message) => ({ error: json({ message }, status) });
 /* ------------------------------ Upstash ------------------------------ */
 
 function redisConfig(env) {
-  const url = (env.UPSTASH_REDIS_REST_URL || '').replace(/\/$/, '');
-  const token = env.UPSTASH_REDIS_REST_TOKEN || '';
+  // 容错：secret 可能被误粘成「变量名="值"」整行，剥掉前缀与首尾引号
+  const unwrap = (value) =>
+    String(value || '')
+      .trim()
+      .replace(/^[A-Za-z_][A-Za-z0-9_]*=/, '')
+      .replace(/^["']|["']$/g, '')
+      .trim();
+  const url = unwrap(env.UPSTASH_REDIS_REST_URL).replace(/\/$/, '');
+  const token = unwrap(env.UPSTASH_REDIS_REST_TOKEN);
   if (!url || !token) throw new Error('未配置 Upstash 环境变量');
   return { url, token };
 }

@@ -32,9 +32,9 @@ jobs:
 
       - name: Build
         env:
-          # 默认指向 Cloudflare Pages 后端；如需覆盖，在仓库 Settings → Secrets and
-          # variables → Actions → Variables 配置 VITE_API_BASE = https://<后端域名>/api
-          VITE_API_BASE: ${{ vars.VITE_API_BASE || 'https://trip-planner-api.pages.dev/api' }}
+          # 后端已迁移到 Cloudflare Pages Functions，固定指向该地址。
+          # （仓库旧的 VITE_API_BASE 变量仍指向 Render，已不再使用）
+          VITE_API_BASE: https://trip-planner-api.pages.dev/api
         run: npm run build
 
       - name: Configure Pages
