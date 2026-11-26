@@ -13,7 +13,10 @@
     "start": "node server/index.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "import:itinerary": "node scripts/import-itinerary.mjs",
-    "sync:remote": "node scripts/sync-remote.mjs"
+    "sync:remote": "node scripts/sync-remote.mjs",
+    "migrate:cloudflare": "node scripts/migrate-to-cloudflare.mjs",
+    "dev:api": "wrangler pages dev",
+    "deploy:api": "wrangler pages deploy --branch main"
   },
   "dependencies": {
     "@ant-design/icons": "^5.5.2",
@@ -31,6 +34,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.1.0",
     "typescript": "^5.7.2",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "wrangler": "^4.168.0"
   }
 }

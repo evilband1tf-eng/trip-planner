@@ -15,6 +15,7 @@ import {
 import dayjs from 'dayjs';
 import { useAppData } from '../store/AppDataProvider';
 import { useAuth } from '../store/AuthProvider';
+import { useItemImages } from '../api/images';
 import { MenuIcon } from '../components/MenuIcon';
 import { ItineraryFormModal } from '../components/ItineraryFormModal';
 import { TripFormModal } from '../components/TripFormModal';
@@ -23,6 +24,23 @@ import type { ItineraryInput, ItineraryItem, MenuInput, MenuItem } from '../type
 
 interface TripPageProps {
   menu: MenuItem;
+}
+
+/** 缩略图：云端模式下图片按需加载 */
+function ItemThumbs({ item }: { item: ItineraryItem }) {
+  const images = useItemImages(item);
+  if (!images.length) return null;
+  return (
+    <div className={`day-item-thumbs${images.length === 1 ? ' is-single' : ''}`}>
+      <Image.PreviewGroup>
+        {images.map((src, imageIndex) => (
+          <div className="day-item-thumb" key={`${item.id}-${imageIndex}`}>
+            <Image src={src} alt={`${item.title} 图片 ${imageIndex + 1}`} preview={{ mask: null }} />
+          </div>
+        ))}
+      </Image.PreviewGroup>
+    </div>
+  );
 }
 
 export function TripPage({ menu }: TripPageProps) {
@@ -240,21 +258,7 @@ export function TripPage({ menu }: TripPageProps) {
                               <LinkOutlined /> {item.linkName || '查看路线'}
                             </a>
                           )}
-                          {item.images?.length ? (
-                            <div className={`day-item-thumbs${item.images.length === 1 ? ' is-single' : ''}`}>
-                              <Image.PreviewGroup>
-                                {item.images.map((src, imageIndex) => (
-                                  <div className="day-item-thumb" key={`${item.id}-${imageIndex}`}>
-                                    <Image
-                                      src={src}
-                                      alt={`${item.title} 图片 ${imageIndex + 1}`}
-                                      preview={{ mask: null }}
-                                    />
-                                  </div>
-                                ))}
-                              </Image.PreviewGroup>
-                            </div>
-                          ) : null}
+                          <ItemThumbs item={item} />
                         </div>
                         {canEdit && (
                           <div className="day-item-actions">

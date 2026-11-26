@@ -158,12 +158,39 @@ export function getState() {
   if (!state) return { menus: [], itineraries: [] };
   return {
     menus: [...state.menus].sort(byOrder),
-    itineraries: [...state.itineraries],
+    itineraries: state.itineraries.map((item) => {
+      const images = item.images.filter((one) => one.startsWith('data:image/'));
+      return { ...item, images, imageCount: images.length };
+    }),
   };
 }
 
 export function findMenu(id) {
   return state?.menus.find((menu) => menu.id === id);
+}
+
+export function findItinerary(id) {
+  return state?.itineraries.find((item) => item.id === id);
+}
+
+const clampCount = (value) => Math.max(0, Math.min(MAX_ITEM_IMAGES, value));
+
+/** 逐张上传：按下标写入图片，空位先用占位符补齐 */
+export async function setItemImage(id, index, dataUrl) {
+  const item = findItinerary(id);
+  if (!item) return null;
+  while (item.images.length <= index) item.images.push('');
+  item.images[index] = dataUrl;
+  await persist();
+  return item;
+}
+
+export async function setMenuImage(id, image) {
+  const menu = findMenu(id);
+  if (!menu) return null;
+  menu.image = image;
+  await persist();
+  return menu;
 }
 
 export async function createMenu(input) {
@@ -210,6 +237,11 @@ export async function deleteMenu(id) {
 export async function createItinerary(input) {
   const menu = findMenu(input.menuId);
   if (!menu || menu.type === 'home') return null;
+  const images = cleanImages(input.images);
+  if (Number.isInteger(input.imageCount)) {
+    const count = clampCount(input.imageCount);
+    while (images.length < count) images.push('');
+  }
   const item = {
     id: newId(),
     menuId: menu.id,
@@ -218,7 +250,7 @@ export async function createItinerary(input) {
     title: cleanText(input.title),
     location: cleanText(input.location),
     notes: cleanText(input.notes),
-    images: cleanImages(input.images),
+    images,
     linkName: cleanText(input.linkName),
     linkUrl: cleanText(input.linkUrl),
     createdAt: new Date().toISOString(),
@@ -235,6 +267,11 @@ export async function updateItinerary(id, patch) {
     if (patch[key] !== undefined) item[key] = cleanText(patch[key]);
   });
   if (patch.images !== undefined) item.images = cleanImages(patch.images);
+  else if (Number.isInteger(patch.imageCount)) {
+    const count = clampCount(patch.imageCount);
+    item.images = item.images.slice(0, count);
+    while (item.images.length < count) item.images.push('');
+  }
   if (!item.title) item.title = '未命名安排';
   await persist();
   return item;

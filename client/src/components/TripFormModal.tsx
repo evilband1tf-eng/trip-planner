@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Col, DatePicker, Form, Input, Modal, Row } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { App, Col, DatePicker, Form, Input, Modal, Row } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import type { MenuInput, MenuItem } from '../types';
+import { getMenuImage } from '../api/images';
 import { IconPicker } from './IconPicker';
 import { ImagePicker } from './ImagePicker';
 
@@ -26,7 +27,34 @@ interface TripFormModalProps {
 
 export function TripFormModal({ open, title, initial, onCancel, onSubmit }: TripFormModalProps) {
   const [form] = Form.useForm<TripFormValues>();
+  const { message } = App.useApp();
   const [saving, setSaving] = useState(false);
+  // 云端模式编辑时封面按需拉取；拉取完成前禁止保存，避免把封面清空
+  const [imageLoading, setImageLoading] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    if (!open || !initial || initial.image || !initial.imageCount) return undefined;
+    let alive = true;
+    setImageLoading(true);
+    setImageFailed(false);
+    getMenuImage(initial.id)
+      .then((image) => {
+        if (alive) form.setFieldValue('image', image);
+      })
+      .catch(() => {
+        if (alive) {
+          setImageFailed(true);
+          message.error('行程图片加载失败，请关闭弹窗重试');
+        }
+      })
+      .finally(() => {
+        if (alive) setImageLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [open, initial, form, message]);
 
   // 预填依赖挂载时的 initialValues；调用方每次打开都会换 key，
   // 连同 Form.useForm() 实例一起重建，才不会读到上一次的残留值。
@@ -76,6 +104,7 @@ export function TripFormModal({ open, title, initial, onCancel, onSubmit }: Trip
       okText="保存"
       cancelText="取消"
       confirmLoading={saving}
+      okButtonProps={{ disabled: imageLoading || imageFailed }}
       onOk={handleOk}
       onCancel={onCancel}
       destroyOnHidden

@@ -30,6 +30,24 @@ const AppDataContext = createContext<AppDataValue | null>(null);
 
 const EMPTY_STATE: AppState = { menus: [], itineraries: [] };
 
+const LOAD_TIMEOUT = 20000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => reject(new Error('连接云端超时，请刷新页面重试')), ms);
+    promise.then(
+      (value) => {
+        window.clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        window.clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
 const sortMenus = (menus: MenuItem[]) => [...menus].sort((a, b) => a.order - b.order);
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
@@ -64,7 +82,7 @@ export function AppDataProvider({ children }: { children: ReactNode }) {
     (async () => {
       try {
         const dataSource = await getDataSource();
-        const next = await dataSource.load();
+        const next = await withTimeout(dataSource.load(), LOAD_TIMEOUT);
         if (cancelled) return;
         setSource(dataSource);
         setState({ menus: sortMenus(next.menus), itineraries: next.itineraries });

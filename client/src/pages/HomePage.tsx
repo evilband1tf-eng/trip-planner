@@ -11,6 +11,7 @@ import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import { useAppData } from '../store/AppDataProvider';
 import { useAuth } from '../store/AuthProvider';
+import { useMenuImage } from '../api/images';
 import { MenuIcon } from '../components/MenuIcon';
 import { TripFormModal } from '../components/TripFormModal';
 import { formatRange, getTripStatus, STATUS_META } from '../utils/trip';
@@ -21,6 +22,22 @@ function sortTrips(a: MenuItem, b: MenuItem): number {
   if (a.startDate) return -1;
   if (b.startDate) return 1;
   return a.order - b.order;
+}
+
+/** 行程封面：云端模式下按需加载 */
+function TripCover({ trip }: { trip: MenuItem }) {
+  const image = useMenuImage(trip);
+  if (!image) return null;
+  return (
+    <div className="trip-card-cover" onClick={(event) => event.stopPropagation()}>
+      <Image
+        src={image}
+        alt={`${trip.name} 行程图片`}
+        preview={{ mask: <span className="trip-card-cover-mask">点击查看大图</span> }}
+        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+      />
+    </div>
+  );
 }
 
 export function HomePage() {
@@ -144,18 +161,7 @@ export function HomePage() {
                   hoverable
                   className="trip-card"
                   onClick={() => navigate(`/p/${trip.id}`)}
-                  cover={
-                    trip.image ? (
-                      <div className="trip-card-cover" onClick={(event) => event.stopPropagation()}>
-                        <Image
-                          src={trip.image}
-                          alt={`${trip.name} 行程图片`}
-                          preview={{ mask: <span className="trip-card-cover-mask">点击查看大图</span> }}
-                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-                        />
-                      </div>
-                    ) : undefined
-                  }
+                  cover={trip.image || trip.imageCount ? <TripCover trip={trip} /> : undefined}
                 >
                   <div className="trip-card-head">
                     <span className="trip-card-icon">

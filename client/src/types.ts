@@ -12,6 +12,8 @@ export interface MenuItem {
   note: string;
   /** 行程封面图，前端压缩后以 data URL 存储 */
   image: string;
+  /** 云端模式下封面图按需加载，这里只带数量标记（0 或 1） */
+  imageCount?: number;
   order: number;
   createdAt: string;
 }
@@ -27,6 +29,8 @@ export interface ItineraryItem {
   notes: string;
   /** 安排图片（最多 9 张），前端压缩后以 data URL 存储 */
   images: string[];
+  /** 云端模式下图片按需加载，列表里只带数量标记 */
+  imageCount?: number;
   /** 路线名称，例如「酒店→埃菲尔铁塔」 */
   linkName: string;
   /** 路线链接（Google 地图等），点击直接拉起对应 App */

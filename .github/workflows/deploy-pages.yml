@@ -32,10 +32,9 @@ jobs:
 
       - name: Build
         env:
-          # 在仓库 Settings → Secrets and variables → Actions → Variables 中配置：
-          #   VITE_API_BASE = https://<你的后端域名>/api
-          # 未配置（空值）时前端会自动降级为浏览器本地存储，站点依然可用
-          VITE_API_BASE: ${{ vars.VITE_API_BASE }}
+          # 默认指向 Cloudflare Pages 后端；如需覆盖，在仓库 Settings → Secrets and
+          # variables → Actions → Variables 配置 VITE_API_BASE = https://<后端域名>/api
+          VITE_API_BASE: ${{ vars.VITE_API_BASE || 'https://trip-planner-api.pages.dev/api' }}
         run: npm run build
 
       - name: Configure Pages

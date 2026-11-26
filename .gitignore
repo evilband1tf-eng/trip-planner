@@ -9,6 +9,8 @@ server/data
 npm-debug.log*
 .env
 .env.local
+.dev.vars
+.wrangler
 .idea
 .vscode/*
 !.vscode/extensions.json

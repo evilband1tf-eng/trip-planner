@@ -14,6 +14,10 @@ import {
   initStore,
   STORAGE_MODE,
   MAX_ITEM_IMAGES,
+  findMenu,
+  findItinerary,
+  setItemImage,
+  setMenuImage,
   authenticateUser,
   createSession,
   userOfToken,
@@ -34,6 +38,8 @@ const app = express();
 app.use(cors());
 // 图片以 data URL 形式随请求提交（一条安排最多 9 张），放宽请求体上限
 app.use(express.json({ limit: '32mb' }));
+// 云端版前端逐张上传图片时用 text/plain 原始文本，这里同样支持
+app.use(express.text({ type: 'text/plain', limit: '8mb' }));
 
 const MAX_IMAGE_CHARS = 4 * 1024 * 1024;
 
@@ -54,6 +60,13 @@ function checkImages(images) {
     const error = checkImage(image);
     if (error) return error;
   }
+  return null;
+}
+
+/** 校验图片数量标记（云端版前端逐张上传时只带数量） */
+function checkImageCount(value) {
+  if (value === undefined) return null;
+  if (!Number.isInteger(value) || value < 0 || value > MAX_ITEM_IMAGES) return '图片数量不正确';
   return null;
 }
 
@@ -305,7 +318,7 @@ api.post(
     const date = String(req.body?.date ?? '').trim();
     if (!title) return res.status(400).json({ message: '请填写行程安排内容' });
     if (!date) return res.status(400).json({ message: '请选择日期' });
-    const imageError = checkImages(req.body?.images);
+    const imageError = checkImages(req.body?.images) || checkImageCount(req.body?.imageCount);
     if (imageError) return res.status(400).json({ message: imageError });
     const linkError = checkLink(req.body?.linkUrl) || checkLinkName(req.body?.linkName);
     if (linkError) return res.status(400).json({ message: linkError });
@@ -321,7 +334,7 @@ api.patch(
   requireAuth,
   requireEditor,
   wrap(async (req, res) => {
-    const imageError = checkImages(req.body?.images);
+    const imageError = checkImages(req.body?.images) || checkImageCount(req.body?.imageCount);
     if (imageError) return res.status(400).json({ message: imageError });
     const linkError = checkLink(req.body?.linkUrl) || checkLinkName(req.body?.linkName);
     if (linkError) return res.status(400).json({ message: linkError });
@@ -340,6 +353,52 @@ api.delete(
     const ok = await deleteItinerary(req.params.id);
     if (!ok) return res.status(404).json({ message: '行程安排不存在' });
     return res.status(204).end();
+  }),
+);
+
+/* ------------------------- 图片按需读写（与云端版一致） ------------------------- */
+
+api.get('/itineraries/:id/images', requireAuth, (req, res) => {
+  const item = findItinerary(req.params.id);
+  if (!item) return res.status(404).json({ message: '行程安排不存在' });
+  return res.json(item.images.filter((one) => one.startsWith('data:image/')));
+});
+
+api.put(
+  '/images/item/:id/:index',
+  requireAuth,
+  requireEditor,
+  wrap(async (req, res) => {
+    const index = Number(req.params.index);
+    if (!Number.isInteger(index) || index < 0 || index >= MAX_ITEM_IMAGES) {
+      return res.status(400).json({ message: '图片序号不正确' });
+    }
+    const text = typeof req.body === 'string' ? req.body : '';
+    const error = checkImage(text);
+    if (error) return res.status(400).json({ message: error });
+    const item = await setItemImage(req.params.id, index, text);
+    if (!item) return res.status(404).json({ message: '行程安排不存在' });
+    return res.json({ ok: true, imageCount: item.images.filter((one) => one.startsWith('data:image/')).length });
+  }),
+);
+
+api.get('/menus/:id/image', requireAuth, (req, res) => {
+  const menu = findMenu(req.params.id);
+  if (!menu) return res.status(404).json({ message: '菜单不存在' });
+  return res.json(menu.image || '');
+});
+
+api.put(
+  '/images/menu/:id',
+  requireAuth,
+  requireEditor,
+  wrap(async (req, res) => {
+    const text = typeof req.body === 'string' ? req.body : '';
+    const error = checkImage(text);
+    if (error) return res.status(400).json({ message: error });
+    const menu = await setMenuImage(req.params.id, text);
+    if (!menu) return res.status(404).json({ message: '菜单不存在' });
+    return res.json(menu);
   }),
 );
 

@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { Col, DatePicker, Form, Input, Modal, Row, TimePicker } from 'antd';
+import { useEffect, useMemo, useState } from 'react';
+import { App, Col, DatePicker, Form, Input, Modal, Row, TimePicker } from 'antd';
 import dayjs from 'dayjs';
 import type { Dayjs } from 'dayjs';
 import type { ItineraryInput, ItineraryItem } from '../types';
+import { getItemImages } from '../api/images';
 import { ImageListPicker } from './ImageListPicker';
 
 interface ItineraryFormValues {
@@ -37,7 +38,34 @@ export function ItineraryFormModal({
   onSubmit,
 }: ItineraryFormModalProps) {
   const [form] = Form.useForm<ItineraryFormValues>();
+  const { message } = App.useApp();
   const [saving, setSaving] = useState(false);
+  // 云端模式编辑时图片按需拉取；拉取完成前禁止保存，避免把图片清空
+  const [imagesLoading, setImagesLoading] = useState(false);
+  const [imagesFailed, setImagesFailed] = useState(false);
+
+  useEffect(() => {
+    if (!open || !initial || initial.images?.length || !initial.imageCount) return undefined;
+    let alive = true;
+    setImagesLoading(true);
+    setImagesFailed(false);
+    getItemImages(initial.id)
+      .then((images) => {
+        if (alive) form.setFieldValue('images', images);
+      })
+      .catch(() => {
+        if (alive) {
+          setImagesFailed(true);
+          message.error('图片加载失败，请关闭弹窗重试');
+        }
+      })
+      .finally(() => {
+        if (alive) setImagesLoading(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [open, initial, form, message]);
 
   // 预填完全依赖本组件挂载时的 initialValues。
   // 调用方（TripPage）每次打开都会给本组件换一个 key，从而连同 Form.useForm() 的
@@ -103,6 +131,7 @@ export function ItineraryFormModal({
       okText="保存"
       cancelText="取消"
       confirmLoading={saving}
+      okButtonProps={{ disabled: imagesLoading || imagesFailed }}
       onOk={handleOk}
       onCancel={onCancel}
       destroyOnHidden

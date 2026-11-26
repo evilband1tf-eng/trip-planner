@@ -12,7 +12,8 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://127.0.0.1:8787',
+        // 默认指向本地 Express；设 API_PROXY_TARGET 可指向 wrangler pages dev 等其他后端
+        target: process.env.API_PROXY_TARGET || 'http://127.0.0.1:8787',
         changeOrigin: true,
       },
     },
